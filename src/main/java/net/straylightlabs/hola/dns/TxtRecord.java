@@ -38,7 +38,9 @@ public class TxtRecord extends Record {
         Map<String, String> pairs = new HashMap<>();
         strings.stream().forEach(s -> {
             String[] parts = s.split("=");
-            pairs.put(parts[0], parts[1]);
+            if(parts.length == 2) {
+                pairs.put(parts[0], parts[1]);
+            }
         });
         return pairs;
     }
