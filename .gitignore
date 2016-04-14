@@ -8,6 +8,7 @@ hs_err_pid*
 
 # build directories
 /out
+/target
 
 # System files
 .DS_Store
@@ -15,5 +16,6 @@ hs_err_pid*
 # IDE files
 /.idea/workspace.xml
 /.idea/tasks.xml
+/*.iml
 
 /build.properties
