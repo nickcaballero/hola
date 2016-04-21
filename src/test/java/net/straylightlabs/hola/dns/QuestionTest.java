@@ -46,7 +46,7 @@ public class QuestionTest {
     public void testBuilder() {
         String name = "_http._tcp.local.";
         Service service = Service.fromName("_http._tcp");
-        Question question = new Question(service, Domain.LOCAL);
+        Question question = new Question(service, Domain.LOCAL, true);
         assertTrue("QName = _http._tcp.local.", question.getQName().equals(name));
         assertTrue("QType = PTR", question.getQType() == Question.QType.PTR);
         assertTrue("QClass = IN", question.getQClass() == Question.QClass.IN);
@@ -55,7 +55,7 @@ public class QuestionTest {
     @Test
     public void testToStringForExceptions() {
         Service service = Service.fromName("_http._tcp");
-        Question question = new Question(service, Domain.LOCAL);
+        Question question = new Question(service, Domain.LOCAL, true);
         String string = question.toString();
         assertTrue("toString() is not null", string != null);
         assertTrue("toString() is not empty", string.length() > 0);

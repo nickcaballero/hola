@@ -31,6 +31,8 @@ import java.net.MulticastSocket;
 import java.net.UnknownHostException;
 import java.nio.ByteBuffer;
 
+import static java.net.InetAddress.getByName;
+
 public class Question extends Message {
     private final String qName;
     private final QType qType;
@@ -39,28 +41,26 @@ public class Question extends Message {
     private final static Logger logger = LoggerFactory.getLogger(Question.class);
 
     private final static short UNICAST_RESPONSE_BIT = (short) 0x8000;
+    private final boolean useIpv6;
 
     public static Question fromBuffer(ByteBuffer buffer) {
         String name = Record.readNameFromBuffer(buffer);
         QType type = QType.fromInt(buffer.getShort() & Record.USHORT_MASK);
         QClass qClass = QClass.fromInt(buffer.getShort() & Record.USHORT_MASK);
-        return new Question(name, type, qClass);
+        return new Question(name, type, qClass, true);
     }
 
-    public Question(String name, QType type, QClass qClass) {
+    public Question(String name, QType type, QClass qClass, boolean useIpv6) {
         super();
+        this.useIpv6 = useIpv6;
         this.qName = name;
         this.qType = type;
         this.qClass = qClass;
         build();
     }
 
-    public Question(Service service, Domain domain) {
-        super();
-        this.qName = service.getName() + "." + domain.getName();
-        this.qType = QType.PTR;
-        this.qClass = QClass.IN;
-        build();
+    public Question(Service service, Domain domain, boolean useIpv6) {
+        this(service.getName() + "." + domain.getName(), QType.PTR, QClass.IN, useIpv6);
     }
 
     private void build() {
@@ -99,10 +99,10 @@ public class Question extends Message {
     public void askOn(MulticastSocket socket) throws IOException {
         logger.debug("Asking question {}", this);
         try {
-            InetAddress groupIPv4 = InetAddress.getByName(Query.MDNS_IP4_ADDRESS);
-            InetAddress groupIPv6 = InetAddress.getByName(Query.MDNS_IP6_ADDRESS);
-            askWithGroup(groupIPv4, socket);
-            askWithGroup(groupIPv6, socket);
+            askWithGroup(getByName(Query.MDNS_IP4_ADDRESS), socket);
+            if(useIpv6) {
+                askWithGroup(getByName(Query.MDNS_IP6_ADDRESS), socket);
+            }
         } catch (UnknownHostException e) {
             System.err.println("UnknownHostException " + e);
         }

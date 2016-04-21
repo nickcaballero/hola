@@ -39,6 +39,7 @@ public class Query {
     private final Service service;
     private final Domain domain;
     private final int browsingTimeout;
+    private final boolean useIpv6;
 
     private MulticastSocket socket;
     private List<Instance> instances;
@@ -63,18 +64,26 @@ public class Query {
      * @return a new Query object
      */
     public static Query createFor(Service service, Domain domain) {
-        return new Query(service, domain, BROWSING_TIMEOUT);
+        return createFor(service, domain, true);
+    }
+
+    /**
+     * @see #createFor(Service, Domain)
+     */
+    public static Query createFor(Service service, Domain domain, boolean useIpv6) {
+        return new Query(service, domain, BROWSING_TIMEOUT, useIpv6);
     }
 
     public static Query createWithTimeout(Service service, Domain domain, int timeout) {
-        return new Query(service, domain, timeout);
+        return new Query(service, domain, timeout, true);
     }
 
-    private Query(Service service, Domain domain, int browsingTimeout) {
+    private Query(Service service, Domain domain, int browsingTimeout, boolean useIpv6) {
         this.service = service;
         this.domain = domain;
         this.browsingTimeout = browsingTimeout;
         this.instanceResponseMap = new HashMap<>();
+        this.useIpv6 = useIpv6;
     }
 
     /**
@@ -84,7 +93,7 @@ public class Query {
      * @throws IOException
      */
     public List<Instance> runOnce() throws IOException {
-        Question question = new Question(service, domain);
+        Question question = new Question(service, domain, useIpv6);
         instances = new ArrayList<>();
         try {
             openSocket();
@@ -158,17 +167,17 @@ public class Query {
     }
 
     private void queryForSrvRecord(Response response) throws IOException {
-        Question question = new Question(response.getPtr(), Question.QType.SRV, Question.QClass.IN);
+        Question question = new Question(response.getPtr(), Question.QType.SRV, Question.QClass.IN, useIpv6);
         ask(question);
     }
 
     private void queryForTxtRecord(Response response) throws IOException {
-        Question question = new Question(response.getPtr(), Question.QType.TXT, Question.QClass.IN);
+        Question question = new Question(response.getPtr(), Question.QType.TXT, Question.QClass.IN, useIpv6);
         ask(question);
     }
 
     private void queryForAddresses(Response response) throws IOException {
-        Question question = new Question(response.getPtr(), Question.QType.A, Question.QClass.IN);
+        Question question = new Question(response.getPtr(), Question.QType.A, Question.QClass.IN, useIpv6);
         ask(question);
     }
 
